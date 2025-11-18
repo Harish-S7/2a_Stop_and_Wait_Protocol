@@ -1,6 +1,7 @@
-# 2b IMPLEMENTATION OF SLIDING WINDOW PROTOCOL
-## AIM
-## ALGORITHM:
+# 2a_Stop_and_Wait_Protocol
+## AIM 
+To write a python program to perform stop and wait protocol
+## ALGORITHM
 1. Start the program.
 2. Get the frame size from the user
 3. To create the frame based on the user request.
@@ -8,70 +9,63 @@
 5. If your frames reach the server it will send ACK signal to client
 6. Stop the Program
 ## PROGRAM
-### Server 
+### Server
 ```
 import socket
 
-s = socket.socket()
-s.bind(('localhost', 9999))
-s.listen(1)
+server = socket.socket()
+server.bind(('localhost', 8000))
+server.listen(1)
+print("Server is listening...")
 
-print("Server listening...")
-conn, addr = s.accept()
-print(f"Connected to {addr}")
+conn, addr = server.accept()
+print(f"Connected with {addr}")
 
 while True:
-    frames = conn.recv(1024).decode()
-    if not frames:
-        break
+    data = conn.recv(1024).decode()
+    if data:
+        print(f"Received: {data}")
+        conn.send("ACK".encode())
 
-    print(f"Received frames: {frames}")
-    ack_message = f"ACK for frames: {frames}"
-    conn.send(ack_message.encode())
-
-conn.close()
-s.close()
+        if data.lower() == 'exit':
+            print("Connection closed by client")
+            conn.close()
+            break
 
 ```
 ### Client
 ```
 import socket
+import time
 
-c = socket.socket()
-c.connect(('localhost', 9999))
+client = socket.socket()
+client.connect(('localhost', 8000))
+client.settimeout(5)
 
-size = int(input("Enter number of frames to send: "))
-l = list(range(size))
-print("Total frames to send:", len(l))
-
-s = int(input("Enter Window Size: "))
-
-i = 0
 while True:
-    while i < len(l):
-        st = i + s
-        frames_to_send = l[i:st]
-        print(f"Sending frames: {frames_to_send}")
-        c.send(str(frames_to_send).encode())
+    msg = input("Enter a message (or type 'exit' to quit): ")
+    client.send(msg.encode())
 
-        ack = c.recv(1024).decode()
-        if ack:
-            print(f"Acknowledgment received: {ack}")
-            i += s
+    if msg.lower() == 'exit':
+        print("Connection closed by client")
+        client.close()
+        break
 
-    break
-
-c.close()
+    try:
+        ack = client.recv(1024).decode()
+        if ack == "ACK":
+            print(f"Server acknowledged: {ack}")
+    except socket.timeout:
+        print("No ACK received, retransmitting...")
+        continue
 
 ```
-
 ## OUTPUT
+### Client
+<img width="887" height="386" alt="image" src="https://github.com/user-attachments/assets/d983287f-0b0e-4ebf-bb16-1c250417d8bf" />
+
 ### Server
-<img width="1850" height="438" alt="image" src="https://github.com/user-attachments/assets/280a0512-b6b7-453d-87af-e6f9fc44da37" />
-
-### Client 
-<img width="1781" height="560" alt="image" src="https://github.com/user-attachments/assets/da892d31-1d54-444a-bf27-b0688e813b22" />
-
+<img width="868" height="238" alt="image" src="https://github.com/user-attachments/assets/45a492c8-f374-49f3-8200-3c13bdb7e385" />
 
 ## RESULT
-Thus, python program to perform stop and wait protocol was successfully executed
+Thus, python program to perform stop and wait protocol was successfully executed.
